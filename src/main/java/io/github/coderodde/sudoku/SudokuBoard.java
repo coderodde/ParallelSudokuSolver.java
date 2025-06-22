@@ -1,5 +1,7 @@
 package io.github.coderodde.sudoku;
 
+import static com.github.coderodde.sudoku.misc.Utils.checkWidthHeight;
+
 /**
  * This class implements a sudoku board.
  * 
@@ -7,9 +9,6 @@ package io.github.coderodde.sudoku;
  * @since 1.0.0 (Jun 22, 2025)
  */
 public final class SudokuBoard {
-    
-    public static final int UNUSED_CELL = 0;
-    private static final int MINIMUM_WIDTH_HEIGHT = 4;
     
     private final int[][] data;
     
@@ -42,32 +41,86 @@ public final class SudokuBoard {
         return data[y][x];
     }
     
-    private static void checkWidthHeight(final int widthHeight) {
-        if (widthHeight < 4) {
-            final String exceptionMessage =
-                    String.format(
-                            "The widthHeight(%d) < MINIMUM_WIDTH_HEIGHT(%d)",
-                            widthHeight,
-                            MINIMUM_WIDTH_HEIGHT);
+    /**
+     * Returns the ASCII art of this sudoku board.
+     * 
+     * @return the ASCII art of this sudoku board.
+     */
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        final String horizontalBar = getHorizontalBar(data.length);
+        
+        sb.append(horizontalBar);
+        
+        for (int y = 0; y < data.length; ++y) {
+            final String row = getDataRow(data[y]);
             
-            throw new IllegalArgumentException(exceptionMessage);
+            sb.append('\n')
+              .append(row)
+              .append('\n')
+              .append(horizontalBar);
         }
         
-        int n;
+        return sb.toString();
+    }
+    
+    /**
+     * Computes a string representing a row in a sudoku board.
+     * 
+     * @param dataRow the data row of a sudoku.
+     * 
+     * @return a string representation of the data row.
+     */
+    private static String getDataRow(final int[] dataRow) {
+        final String str = Integer.toString(dataRow[dataRow.length - 1]);
+        final int cellWidth = str.length();
+        final String fmt = String.format("|%%%dd", cellWidth);
+        final StringBuilder sb = 
+                new StringBuilder(
+                        1 + (1 + cellWidth) * dataRow.length);
         
-        for (n = MINIMUM_WIDTH_HEIGHT / 2; ; ++n) {
-            if (n * n >= widthHeight) {
-                break;
-            }
+        for (int x = 0; x < dataRow.length; ++x) {
+            sb.append(String.format(fmt, dataRow[x]));
         }
         
-        if (n * n != widthHeight) {
-            final String exceptionMessage = 
-                    String.format(
-                            "Abnormal widthHeight(%d)",
-                            widthHeight);
-            
-            throw new IllegalArgumentException(exceptionMessage);
+        return sb.append('|').toString();
+    }
+    
+    /**
+     * Returns the horizontal separating bar.
+     * 
+     * @param widthHeight the width/height of the target sudoku board.
+     * 
+     * @return the string representation of the separating bar.
+     */
+    private static String getHorizontalBar(final int widthHeight) {
+        final String nstr = Integer.toString(widthHeight);
+        final String innerCellWidth = getInnerCellWidth(nstr.length());
+        final StringBuilder sb = new StringBuilder("+");
+        
+        for (int x = 0; x < widthHeight; ++x) {
+            sb.append(innerCellWidth)
+              .append('+');
         }
+        
+        return sb.toString();
+    }
+    
+    /**
+     * Computes the inner cell upper horizontal bar.
+     * 
+     * @param cellWidth the width of a cell.
+     * 
+     * @return inner cell upper horizontal bar.
+     */
+    private static String getInnerCellWidth(final int cellWidth) {
+        final StringBuilder sb = new StringBuilder(cellWidth);
+        
+        for (int x = 0; x < cellWidth; ++x) {
+            sb.append('-');
+        }
+        
+        return sb.toString();
     }
 }

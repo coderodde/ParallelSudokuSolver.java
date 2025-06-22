@@ -13,6 +13,10 @@ import io.github.coderodde.sudoku.SudokuBoard;
  */
 public final class SudokuBoardVerifier {
    
+    private SudokuBoardVerifier() {
+        
+    }
+    
     /**
      * Verifies the input sudoku board.
      * 
@@ -45,7 +49,7 @@ public final class SudokuBoardVerifier {
             for (int x = 0; x < n; ++x) {
                 final int cellValue = board.get(x, y);
                 
-                if (cellValue == SudokuBoard.UNUSED_CELL) {
+                if (cellValue == Utils.UNUSED_CELL) {
                     continue;
                 }
                 

@@ -8,7 +8,7 @@ public class RandomSudokuBoardGeneratorTest {
     @Test
     public void generatesValidRandomSudokuBoard() {
         final SudokuBoard board = 
-                new RandomSudokuBoardGenerator(4)
+                new RandomSudokuBoardGenerator(9)
                         .generateRandomSudokuBoard();
         
         System.out.println(board);

@@ -73,8 +73,8 @@ public final class SudokuBoard {
      * @return a string representation of the data row.
      */
     private static String getDataRow(final int[] dataRow) {
-        final String str = Integer.toString(dataRow[dataRow.length - 1]);
-        final int cellWidth = str.length();
+        final String maximumCellWidth = Integer.toString(dataRow.length);
+        final int cellWidth = maximumCellWidth.length();
         final String fmt = String.format("|%%%dd", cellWidth);
         final StringBuilder sb = 
                 new StringBuilder(

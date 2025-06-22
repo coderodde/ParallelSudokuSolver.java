@@ -71,9 +71,7 @@ public final class RandomSudokuBoardGenerator {
             return true;
         }
         
-        while (providers[y][x].hasMoreNextCellValues()) {
-            
-            final int cellValue = providers[y][x].getNextCellValue();
+        for (final int cellValue : providers[y][x].getCellValues()) {
             
             if (rowIntSets[y].contains(cellValue)) {
                 continue;
@@ -90,20 +88,19 @@ public final class RandomSudokuBoardGenerator {
             
             rowIntSets[y].add(cellValue);
             colIntSets[x].add(cellValue);
-            minisquareIntSets[y / nsqrt][x/ nsqrt].add(cellValue);
+            minisquareIntSets[y / nsqrt]
+                             [x / nsqrt].add(cellValue);
             
             board.set(x, y, cellValue);
             
-            final boolean solved = generateRandomSudokuBoardImpl(board,
-                                                                 x + 1,
-                                                                 y);
-            if (solved) {
+            if (generateRandomSudokuBoardImpl(board,
+                                              x + 1,
+                                              y)) {
                 return true;
             }
             
             rowIntSets[y].remove(cellValue);
             colIntSets[x].remove(cellValue);
-            
             minisquareIntSets[y / nsqrt]
                              [x / nsqrt].remove(cellValue);
         }
@@ -116,7 +113,6 @@ public final class RandomSudokuBoardGenerator {
      */
     private static final class RandomCellValueProvider {
         
-        private int cursor = 0;
         private final int[] randomCellValues;
 
         /**
@@ -134,12 +130,8 @@ public final class RandomSudokuBoardGenerator {
             shuffle(randomCellValues);
         }
         
-        int getNextCellValue() {
-            return randomCellValues[cursor++];
-        }
-        
-        boolean hasMoreNextCellValues() {
-            return cursor < randomCellValues.length;
+        int[] getCellValues() {
+            return this.randomCellValues;
         }
         
         /**
@@ -150,7 +142,7 @@ public final class RandomSudokuBoardGenerator {
          * @param array the array to shuffle.
          */
         private static void shuffle(final int[] array) {
-            final Random random = new Random(13L);
+            final Random random = new Random();
             
             for (int i = array.length - 1; i > 0; --i) {
                 final int j = random.nextInt(i + 1);

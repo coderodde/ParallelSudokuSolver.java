@@ -1,6 +1,6 @@
 package com.github.coderodde.sudoku;
 
-import com.github.coderodde.sudoku.misc.SudokuBoardVerifier;
+import io.github.coderodde.sudoku.misc.SudokuBoardVerifier;
 import io.github.coderodde.sudoku.SudokuBoard;
 import static org.junit.Assert.assertFalse;
 import org.junit.Test;

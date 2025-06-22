@@ -1,6 +1,6 @@
 package io.github.coderodde.sudoku;
 
-import static com.github.coderodde.sudoku.misc.Utils.checkWidthHeight;
+import static io.github.coderodde.sudoku.misc.Utils.checkWidthHeight;
 
 /**
  * This class implements a sudoku board.

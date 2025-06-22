@@ -1,4 +1,4 @@
-package com.github.coderodde.sudoku.misc;
+package io.github.coderodde.sudoku.misc;
 
 import java.util.Arrays;
 

@@ -25,7 +25,6 @@ public final class SudokuBoardVerifier {
         
         final IntSet[] rowIntSets = new IntSet[n];
         final IntSet[] colIntSets = new IntSet[n];
-        final IntSet[][] minisquareIntSets = new IntSet[n][n];
         
         for (int i = 0; i < n; ++i) {
             rowIntSets[i] = new IntSet(n + 1);
@@ -33,11 +32,12 @@ public final class SudokuBoardVerifier {
         }
         
         final int sqrtn = (int) Math.sqrt(n);
+        final IntSet[][] minisquareIntSets = new IntSet[sqrtn]
+                                                       [sqrtn];
         
         for (int y = 0; y < sqrtn; ++y) {
             for (int x = 0; x < sqrtn; ++x) {
-                minisquareIntSets[y / sqrtn]
-                                 [x / sqrtn] = new IntSet(n + 1);
+                minisquareIntSets[y][x] = new IntSet(n + 1);
             }
         }
         
@@ -61,13 +61,20 @@ public final class SudokuBoardVerifier {
                     return false;
                 }
                 
+                minisquareIntSets[minisquareCellY]
+                                 [minisquareCellX].add(cellValue);
+                
                 if (rowIntSets[x].contains(cellValue)) {
                     return false;
                 }
                 
+                rowIntSets[x].add(cellValue);
+                
                 if (colIntSets[y].contains(cellValue)) {
                     return false;
                 }
+                
+                colIntSets[y].add(cellValue);
             }
         }
         

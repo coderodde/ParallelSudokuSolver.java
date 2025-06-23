@@ -1,6 +1,7 @@
 package io.github.coderodde.sudoku.misc;
 
 import io.github.coderodde.sudoku.SudokuBoard;
+import static io.github.coderodde.sudoku.misc.Utils.shuffle;
 import java.util.Random;
 
 /**
@@ -132,24 +133,6 @@ public final class RandomSudokuBoardGenerator {
         
         int[] getCellValues() {
             return this.randomCellValues;
-        }
-        
-        /**
-         * This static method implements the 
-         * <a href="https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle">
-         * Fisher-Yates shuffle</a>.
-         * 
-         * @param array the array to shuffle.
-         */
-        private static void shuffle(final int[] array) {
-            final Random random = new Random();
-            
-            for (int i = array.length - 1; i > 0; --i) {
-                final int j = random.nextInt(i + 1);
-                final int tmp = array[j];
-                array[j] = array[i];
-                array[i] = tmp;
-            }
         }
     }
 }

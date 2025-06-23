@@ -15,6 +15,6 @@ public class RandomSudokuBoardGeneratorTest {
         
         System.out.println(board);
         
-        assertTrue(SudokuBoardVerifier.verify(board));
+        assertTrue(SudokuBoardVerifier.isValid(board));
     }
 }

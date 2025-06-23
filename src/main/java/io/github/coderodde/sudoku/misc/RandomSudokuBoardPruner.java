@@ -35,7 +35,7 @@ public final class RandomSudokuBoardPruner {
         Collections.shuffle(pointList);
         
         for (int i = 0; i < cellsToPrune && !pointList.isEmpty(); ++i) {
-            pointList.removeLast();
+            pointList.remove(pointList.size() - 1);
         }
     }
 }

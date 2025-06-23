@@ -24,7 +24,7 @@ public final class SudokuBoardVerifier {
      * 
      * @return {@code true} if and only if the input sudoku board is valid.
      */
-    public static boolean verify(final SudokuBoard board) {
+    public static boolean isValid(final SudokuBoard board) {
         final int n = board.getWidthHeight();
         
         final IntSet[] rowIntSets = new IntSet[n];

@@ -1,5 +1,7 @@
 package io.github.coderodde.sudoku.misc;
 
+import java.util.Random;
+
 /**
  * This class provides common utilities.
  * 
@@ -43,4 +45,22 @@ public final class Utils {
             throw new IllegalArgumentException(exceptionMessage);
         }
     }
+    
+    /**
+     * This static method implements the 
+     * <a href="https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle">
+     * Fisher-Yates shuffle</a>.
+     * 
+     * @param array the array to shuffle.
+     */
+    public static void shuffle(final int[] array) {
+        final Random random = new Random();
+
+        for (int i = array.length - 1; i > 0; --i) {
+            final int j = random.nextInt(i + 1);
+            final int tmp = array[j];
+            array[j] = array[i];
+            array[i] = tmp;
+        }
+    }   
 }

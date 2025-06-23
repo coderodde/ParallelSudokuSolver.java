@@ -1,6 +1,7 @@
 package io.github.coderodde.sudoku;
 
 import static io.github.coderodde.sudoku.misc.Utils.checkWidthHeight;
+import java.util.Arrays;
 
 /**
  * This class implements a sudoku board.
@@ -16,6 +17,21 @@ public final class SudokuBoard {
         checkWidthHeight(widthHeight);
         this.data = new int[widthHeight]
                            [widthHeight];
+    }
+    
+    public SudokuBoard(final SudokuBoard board) {
+        this.data = new int[board.getWidthHeight()]
+                           [board.getWidthHeight()];
+        
+        for (int y = 0; y < board.getWidthHeight(); ++y) {
+            this.data[y] = new int[board.getWidthHeight()];
+            
+            System.arraycopy(board.data[y], 
+                             0,
+                             this.data[y], 
+                             0,
+                             data.length);
+        }
     }
     
     public boolean isValidCellValue(final int x,

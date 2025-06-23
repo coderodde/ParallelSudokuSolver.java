@@ -14,7 +14,7 @@ public final class SudokuBoardTest {
         board.set(1, 1, 1);
         board.set(0, 0, 1);
         
-        assertFalse(SudokuBoardVerifier.verify(board));
+        assertFalse(SudokuBoardVerifier.isValid(board));
     }
 
     @Test
@@ -24,7 +24,7 @@ public final class SudokuBoardTest {
         board.set(0, 0, 2);
         board.set(0, 3, 2);
         
-        assertFalse(SudokuBoardVerifier.verify(board));
+        assertFalse(SudokuBoardVerifier.isValid(board));
     }
 
     @Test
@@ -34,7 +34,7 @@ public final class SudokuBoardTest {
         board.set(1, 2, 3);
         board.set(3, 2, 3);
         
-        assertFalse(SudokuBoardVerifier.verify(board));
+        assertFalse(SudokuBoardVerifier.isValid(board));
     }
     
     @Test
@@ -43,7 +43,7 @@ public final class SudokuBoardTest {
         
         board.set(1, 2, -1);
         
-        assertFalse(SudokuBoardVerifier.verify(board));
+        assertFalse(SudokuBoardVerifier.isValid(board));
     }
     
     @Test
@@ -52,6 +52,6 @@ public final class SudokuBoardTest {
         
         board.set(3, 0, 5);
         
-        assertFalse(SudokuBoardVerifier.verify(board));
+        assertFalse(SudokuBoardVerifier.isValid(board));
     }
 }

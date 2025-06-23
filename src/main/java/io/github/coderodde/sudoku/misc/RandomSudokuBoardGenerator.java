@@ -12,6 +12,7 @@ import java.util.Random;
  */
 public final class RandomSudokuBoardGenerator {
     
+    private final Random random;
     private final SudokuBoard board;
     private final RandomCellValueProvider[][] providers;
     private final IntSet[] rowIntSets;
@@ -19,7 +20,9 @@ public final class RandomSudokuBoardGenerator {
     private final IntSet[][] minisquareIntSets;
     private final int nsqrt;
     
-    public RandomSudokuBoardGenerator(final int widthHeight) {
+    public RandomSudokuBoardGenerator(final int widthHeight,
+                                      final Random random) {
+        this.random = random;
         this.board = new SudokuBoard(widthHeight);
         this.providers = new RandomCellValueProvider[widthHeight]
                                                     [widthHeight];

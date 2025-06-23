@@ -2,10 +2,11 @@ package io.github.coderodde.sudoku;
 
 import io.github.coderodde.sudoku.misc.IntSet;
 import io.github.coderodde.sudoku.misc.RandomSudokuBoardSeedProvider;
+import io.github.coderodde.sudoku.misc.SudokuBoardVerifier;
 import io.github.coderodde.sudoku.misc.Utils;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * This interface defines the API of sudoku solvers.
@@ -38,7 +39,11 @@ public final class ParallelSudokuSolver {
      * @return a solved board.
      */
     public SudokuBoard solve(final SudokuBoard sudokuBoard,
-                             final int numberOfProcessors) {
+                             int numberOfProcessors) {
+        
+        if (!SudokuBoardVerifier.isValid(sudokuBoard)) {
+            return null;
+        }
         
         loadIntSets(sudokuBoard);
         
@@ -53,13 +58,11 @@ public final class ParallelSudokuSolver {
         final SharedThreadState sharedThreadState = 
                 new SharedThreadState();
         
-        for (int i = 0; i < numberOfProcessors; ++i) {
+        for (int i = 0; i < Math.min(numberOfProcessors, seeds.size()); ++i) {
             threads.add(
-                    new SudokuSolverThread(
-                            seeds.get(i),
-                            sudokuBoard, 
-                            sharedThreadState));
-            
+                    new SudokuSolverThread(new SudokuBoard(seeds.get(i)),
+                                           sudokuBoard, 
+                                           sharedThreadState));
             threads.get(i).start();
         }
         
@@ -72,7 +75,7 @@ public final class ParallelSudokuSolver {
             }
         }
         
-        return getCompleteSudokuBoard(threads); 
+        return sharedThreadState.getSolution(); 
     }
     
     private static SudokuBoard getCompleteSudokuBoard(
@@ -94,7 +97,7 @@ public final class ParallelSudokuSolver {
         
         rowIntSets = new IntSet[n];
         colIntSets = new IntSet[n];
-        minisquareIntSets = new IntSet[n][n];
+        minisquareIntSets = new IntSet[sqrtn][sqrtn];
         
         for (int i = 0; i < n; ++i) {
             rowIntSets[i] = new IntSet(capacity);
@@ -102,10 +105,25 @@ public final class ParallelSudokuSolver {
         }
         
         for (int y = 0; y < sqrtn; ++y) {
-            minisquareIntSets[y] = new IntSet[n];
+            minisquareIntSets[y] = new IntSet[sqrtn];
             
             for (int x = 0; x < sqrtn; ++x) {
                 minisquareIntSets[y][x] = new IntSet(capacity);
+            }
+        }
+        
+        for (int y = 0; y < board.getWidthHeight(); ++y) {
+            for (int x = 0; x < board.getWidthHeight(); ++x) {
+                final int cellValue = board.get(x, y);
+                
+                if (cellValue == Utils.UNUSED_CELL) {
+                    continue;
+                }
+                
+                rowIntSets[y].add(cellValue);
+                colIntSets[x].add(cellValue);
+                minisquareIntSets[y / sqrtn]
+                                 [x / sqrtn].add(cellValue);
             }
         }
     }
@@ -137,7 +155,9 @@ public final class ParallelSudokuSolver {
         private boolean solveImpl(int x,
                                   int y) {
             
-            if (sharedThreadState.isSolutionFound()) {
+//            System.out.println("x = " + x + ", y = " + y);
+            
+            if (sharedThreadState.getSolution() != null) {
                 return true;
             }
             
@@ -147,8 +167,9 @@ public final class ParallelSudokuSolver {
             }
             
             if (y == seed.getWidthHeight()) {
-                sharedThreadState.setSolutionFound();
-                result = seed;
+//                System.out.println("found!");
+                sharedThreadState.setSolution(seed);
+//                result = seed;
                 return true;
             }
             
@@ -173,7 +194,7 @@ public final class ParallelSudokuSolver {
                 }
                 
                 if (minisquareIntSets[y / sqrtn]
-                                     [x / sqrtn].contains(y)) {
+                                     [x / sqrtn].contains(cellValue)) {
                     continue;
                 }
                 
@@ -185,7 +206,7 @@ public final class ParallelSudokuSolver {
                                  [x / sqrtn].add(cellValue);
                 
                 if (solveImpl(x + 1, y)) {
-//                    sharedThreadState.setSolutionFound();
+//                    sharedThreadState.setSolution(seed);
                     return true;
                 }
                 
@@ -201,15 +222,15 @@ public final class ParallelSudokuSolver {
     
     private static final class SharedThreadState {
         
-        private final AtomicBoolean solutionFoundFlag =
-                new AtomicBoolean(false);
+        private final AtomicReference<SudokuBoard> solution = 
+                  new AtomicReference(null);
         
-        public boolean isSolutionFound() {
-            return solutionFoundFlag.get();
+        public SudokuBoard getSolution() {
+            return solution.get();
         }
         
-        public void setSolutionFound() {
-            solutionFoundFlag.set(true);
+        public void setSolution(final SudokuBoard board) {
+            solution.set(board);
         }
     }
 }

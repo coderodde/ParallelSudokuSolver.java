@@ -5,6 +5,7 @@ import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 /**
  * This class provides a method for pruning sudoku boards.
@@ -22,7 +23,8 @@ public final class RandomSudokuBoardPruner {
      * @param cellsToPrune the number of cells to prune.
      */
     public static void prune(final SudokuBoard board, 
-                             final int cellsToPrune) {
+                             final int cellsToPrune,
+                             final Random random) {
         
         final List<Point> pointList = new ArrayList<>();
         
@@ -32,7 +34,7 @@ public final class RandomSudokuBoardPruner {
             }
         }
         
-        Collections.shuffle(pointList);
+        Collections.shuffle(pointList, random);
         
         for (int i = 0; i < cellsToPrune && !pointList.isEmpty(); ++i) {
             final int index = pointList.size() - 1;

@@ -9,21 +9,28 @@ import io.github.coderodde.sudoku.misc.Utils;
 import java.util.Random;
 
 /**
- *
- * @version 1.0.0 (Dec 4, 2024)
+ * This class implements a demonstration program comparing the parallel sudoku
+ * search with varying number of threads.
+ * 
+ * @version 1.1.0 (Jun 23, 2024)
  * @since 1.0.0 (Dec 4, 2024)
  */
 public class Demo {
 
-    private static final int WIDTH_HEIGHT = 36;
-    private static final int NUMBER_OF_CELLS_TO_PRUNE = 6;
+    private static final int WIDTH_HEIGHT = 16;
+    private static final int NUMBER_OF_CELLS_TO_PRUNE = 150;
     
     public static void main(String[] args) {
-        final Random random = new Random(13L);
-        int threads = Runtime.getRuntime().availableProcessors();
+        final Random random = new Random();
+        int threads = Runtime.getRuntime().availableProcessors() * 4;
+        
+        System.out.println("Generating a random full sudoku board...");
+        
         final SudokuBoard sourceSudokuBoard = 
                 new RandomSudokuBoardGenerator(WIDTH_HEIGHT, random)
                         .generateRandomSudokuBoard();
+        
+        System.out.println("Board generated. Pruning...");
         
         RandomSudokuBoardPruner.prune(sourceSudokuBoard, 
                                       NUMBER_OF_CELLS_TO_PRUNE,

@@ -1,7 +1,5 @@
 package io.github.coderodde.sudoku.misc;
 
-import java.util.Arrays;
-
 /**
  * This class implements a simple set data structures for small integers.
  * 
@@ -53,12 +51,5 @@ public final class IntSet {
      */
     public void remove(final int integer) {
         data[integer] = false;
-    }
-    
-    /**
-     * Removes all integers from this integer set.
-     */
-    public void clear() {
-        Arrays.fill(data, false);
     }
 }

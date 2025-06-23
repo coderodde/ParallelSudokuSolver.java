@@ -54,9 +54,7 @@ public final class Utils {
      * 
      * @param array the array to shuffle.
      */
-    public static void shuffle(final int[] array) {
-        final Random random = new Random();
-
+    public static void shuffle(final int[] array, final Random random) {
         for (int i = array.length - 1; i > 0; --i) {
             final int j = random.nextInt(i + 1);
             final int tmp = array[j];
@@ -64,6 +62,10 @@ public final class Utils {
             array[i] = tmp;
         }
     }   
+    
+    public static void shuffle(final int[] array) {
+        shuffle(array, new Random());
+    }
     
     public static boolean isCompleteSudokuBoard(final SudokuBoard board) {
         for (int y = 0; y < board.getWidthHeight(); ++y) {

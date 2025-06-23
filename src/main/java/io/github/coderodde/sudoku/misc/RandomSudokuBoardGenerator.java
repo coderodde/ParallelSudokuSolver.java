@@ -12,24 +12,52 @@ import java.util.Random;
  */
 public final class RandomSudokuBoardGenerator {
     
-    private final Random random;
+    /**
+     * The generated sudoku board.
+     */
     private final SudokuBoard board;
+    
+    /**
+     * The matrix of random cell value providers.
+     */
     private final RandomCellValueProvider[][] providers;
+    
+    /**
+     * The row-wise filters.
+     */
     private final IntSet[] rowIntSets;
+    
+    /**
+     * The column-wise filters.
+     */
     private final IntSet[] colIntSets;
+    
+    /**
+     * The minisquare filters.
+     */
     private final IntSet[][] minisquareIntSets;
+    
+    /**
+     * The minisquare width/height.
+     */
     private final int nsqrt;
     
+    /**
+     * Construct this sudoku board generator.
+     * 
+     * @param widthHeight the width/height of the resulting sudoku board.
+     * @param random      the random number generator.
+     */
     public RandomSudokuBoardGenerator(final int widthHeight,
                                       final Random random) {
-        this.random = random;
         this.board = new SudokuBoard(widthHeight);
         this.providers = new RandomCellValueProvider[widthHeight]
                                                     [widthHeight];
         
         for (int y = 0; y < widthHeight; ++y) {
             for (int x = 0; x < widthHeight; ++x) {
-                this.providers[y][x] = new RandomCellValueProvider(widthHeight);
+                this.providers[y][x] = new RandomCellValueProvider(widthHeight,
+                                                                   random);
             }
         }
         
@@ -58,11 +86,25 @@ public final class RandomSudokuBoardGenerator {
         this.nsqrt = (int) Math.sqrt(widthHeight);
     }
     
+    /**
+     * The actual generation method.
+     * 
+     * @return a randomly  built sudoku board.
+     */
     public SudokuBoard generateRandomSudokuBoard() {
         generateRandomSudokuBoardImpl(board, 0, 0);
         return board;
     }
     
+    /**
+     * Implements the random sudoku board generation.
+     * 
+     * @param board the board to work on.
+     * @param x the {@code x}-coordinate of the next cell to process.
+     * @param y the {@code y}-coordinate of the next cell to process.
+     * @return {@code true} if and only if a valid sudoku board is constructed.
+     *         (Will end up in {code board}.)
+     */
     private boolean generateRandomSudokuBoardImpl(final SudokuBoard board, 
                                                   int x,
                                                   int y) {
@@ -124,14 +166,14 @@ public final class RandomSudokuBoardGenerator {
          * 
          * @param n the width/height of the target sudoku board.
          */
-        RandomCellValueProvider(final int n) {
+        RandomCellValueProvider(final int n, final Random random) {
             this.randomCellValues = new int[n];
             
             for (int i = 0; i < n; ++i) {
                 randomCellValues[i] = i + 1;
             }
             
-            shuffle(randomCellValues);
+            shuffle(randomCellValues, random);
         }
         
         int[] getCellValues() {

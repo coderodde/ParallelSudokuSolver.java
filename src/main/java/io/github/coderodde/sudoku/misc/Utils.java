@@ -63,6 +63,11 @@ public final class Utils {
         }
     }   
     
+    /**
+     * Passes to {@link #shuffle(int[], java.util.Random)}.
+     * 
+     * @param array the array to shuffle.
+     */
     public static void shuffle(final int[] array) {
         shuffle(array, new Random());
     }

@@ -26,24 +26,30 @@ public final class RandomSudokuBoardPruner {
                              final int cellsToPrune,
                              final Random random) {
         
-        final List<Point> pointList = new ArrayList<>();
+        final List<Point> pointList = new ArrayList<>(board.getWidthHeight() *
+                                                      board.getWidthHeight());
         
+        // Load all the coordinate points:
         for (int y = 0; y < board.getWidthHeight(); ++y) {
             for (int x = 0; x < board.getWidthHeight(); ++x) {
                 pointList.add(new Point(x, y));
             }
         }
         
+        // Shuffle randomly:
         Collections.shuffle(pointList, random);
         
+        // Prune the sudoku board cells randomly according to pointList:
         for (int i = 0; i < cellsToPrune && !pointList.isEmpty(); ++i) {
             final int index = pointList.size() - 1;
             final Point p = pointList.get(index);
             
+            // Prune cell:
             board.set(p.x, 
                       p.y, 
                       Utils.UNUSED_CELL);
             
+            // Update pointList state:
             pointList.remove(index);
         }
     }

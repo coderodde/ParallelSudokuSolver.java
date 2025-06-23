@@ -1,7 +1,10 @@
 package io.github.coderodde.sudoku;
 
 import io.github.coderodde.sudoku.misc.IntSet;
+import io.github.coderodde.sudoku.misc.RandomSudokuBoardSeedProvider;
 import io.github.coderodde.sudoku.misc.Utils;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -24,7 +27,6 @@ public final class ParallelSudokuSolver {
      * @return a solved board.
      */
     public SudokuBoard solve(final SudokuBoard sudokuBoard) {
-        loadIntSets(sudokuBoard);
         return solve(sudokuBoard, 
                      Runtime.getRuntime().availableProcessors());
     }
@@ -37,7 +39,52 @@ public final class ParallelSudokuSolver {
      */
     public SudokuBoard solve(final SudokuBoard sudokuBoard,
                              final int numberOfProcessors) {
-        return null;
+        
+        loadIntSets(sudokuBoard);
+        
+        final List<SudokuSolverThread> threads =
+                new ArrayList<>(numberOfProcessors);
+        
+        final List<SudokuBoard> seeds = 
+                RandomSudokuBoardSeedProvider
+                        .computeSeeds(sudokuBoard,
+                                      numberOfProcessors);
+        
+        final SharedThreadState sharedThreadState = 
+                new SharedThreadState();
+        
+        for (int i = 0; i < numberOfProcessors; ++i) {
+            threads.add(
+                    new SudokuSolverThread(
+                            seeds.get(i),
+                            sudokuBoard, 
+                            sharedThreadState));
+            
+            threads.get(i).start();
+        }
+        
+        for (final SudokuSolverThread thread : threads) {
+            try {
+                thread.join();
+            } catch (final InterruptedException ex) {
+                ex.printStackTrace();
+                System.exit(1);
+            }
+        }
+        
+        return getCompleteSudokuBoard(threads); 
+    }
+    
+    private static SudokuBoard getCompleteSudokuBoard(
+            final List<SudokuSolverThread> threads) {
+        
+        for (final SudokuSolverThread thread : threads) {
+            if (Utils.isCompleteSudokuBoard(thread.seed)) {
+                return thread.seed;
+            }
+        }
+        
+        throw new IllegalStateException("No complete sudoku boards");
     }
     
     private void loadIntSets(final SudokuBoard board) {
@@ -67,6 +114,7 @@ public final class ParallelSudokuSolver {
         
         private final SudokuBoard seed;
         private final SudokuBoard original;
+        private SudokuBoard result;
         private final SharedThreadState sharedThreadState;
         
         SudokuSolverThread(final SudokuBoard seed,
@@ -80,6 +128,10 @@ public final class ParallelSudokuSolver {
         @Override
         public void run() {
             solveImpl(0, 0);
+        }
+        
+        public SudokuBoard getResult() {
+            return result;
         }
         
         private boolean solveImpl(int x,
@@ -96,6 +148,7 @@ public final class ParallelSudokuSolver {
             
             if (y == seed.getWidthHeight()) {
                 sharedThreadState.setSolutionFound();
+                result = seed;
                 return true;
             }
             
@@ -132,7 +185,7 @@ public final class ParallelSudokuSolver {
                                  [x / sqrtn].add(cellValue);
                 
                 if (solveImpl(x + 1, y)) {
-                    sharedThreadState.setSolutionFound();
+//                    sharedThreadState.setSolutionFound();
                     return true;
                 }
                 
@@ -148,7 +201,8 @@ public final class ParallelSudokuSolver {
     
     private static final class SharedThreadState {
         
-        private final AtomicBoolean solutionFoundFlag = new AtomicBoolean(false);
+        private final AtomicBoolean solutionFoundFlag =
+                new AtomicBoolean(false);
         
         public boolean isSolutionFound() {
             return solutionFoundFlag.get();

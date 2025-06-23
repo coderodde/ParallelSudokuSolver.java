@@ -1,5 +1,6 @@
 package io.github.coderodde.sudoku.misc;
 
+import io.github.coderodde.sudoku.SudokuBoard;
 import java.util.Random;
 
 /**
@@ -63,4 +64,16 @@ public final class Utils {
             array[i] = tmp;
         }
     }   
+    
+    public static boolean isCompleteSudokuBoard(final SudokuBoard board) {
+        for (int y = 0; y < board.getWidthHeight(); ++y) {
+            for (int x = 0; x < board.getWidthHeight(); ++x) {
+                if (board.get(x, y) == Utils.UNUSED_CELL) {
+                    return false;
+                }
+            }
+        }
+        
+        return true;
+    }
 }

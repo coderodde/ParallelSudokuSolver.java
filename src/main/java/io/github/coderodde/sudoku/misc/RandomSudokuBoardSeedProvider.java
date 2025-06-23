@@ -3,8 +3,10 @@ package io.github.coderodde.sudoku.misc;
 import io.github.coderodde.sudoku.SudokuBoard;
 import java.awt.Point;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 /**
  * This class provides facilities for generating random sudoku board seeds.
@@ -27,21 +29,21 @@ public final class RandomSudokuBoardSeedProvider {
         
         // Get the list of all empty cells:
         final List<Point> emptyCellPoints = getEmptyCellPoints(sourceBoard);
-        
-        // Fix the seed list capacity:
-        final int seedsListCapacity = 
-                Math.min(emptyCellPoints.size(), 
-                         requestedSeeds);
-        
         final Random random = new Random();
-        
-        final List<SudokuBoard> seeds = new ArrayList<>(seedsListCapacity);
+        final List<SudokuBoard> seeds = new ArrayList<>(requestedSeeds);
+        final Set<SudokuBoard> filter = new HashSet<>(requestedSeeds);
         
         // Actual seed generatoin:
-        for (int i = 0; i < seedsListCapacity; ++i) {
-            seeds.add(computeRandomSeed(sourceBoard, 
-                                        emptyCellPoints, 
-                                        random));
+        for (int i = 0; i < requestedSeeds; ++i) {
+            final SudokuBoard seed = computeRandomSeed(sourceBoard, 
+                                                       emptyCellPoints,
+                                                       filter,
+                                                       random);
+            
+            if (seed != null) {
+                filter.add(seed);
+                seeds.add(seed);
+            }
         }
         
         return seeds;
@@ -58,6 +60,7 @@ public final class RandomSudokuBoardSeedProvider {
     private static SudokuBoard computeRandomSeed(
             final SudokuBoard board,
             final List<Point> emptyCellCoordinates,
+            final Set<SudokuBoard> currentSeeds,
             final Random random) {
         
         // Get a copy:
@@ -81,13 +84,14 @@ public final class RandomSudokuBoardSeedProvider {
             
             // Check that after new cell value the seed remains valid:
             if (SudokuBoardVerifier.isValid(seed)) {
-                // Once here, we have found a seed. Return it:
-                emptyCellCoordinates.remove(targetPointIndex);
-                return seed;
+                if (!currentSeeds.contains(seed)) {
+                    currentSeeds.add(seed);
+                    return seed;
+                }
             }
         }
         
-        throw new IllegalStateException("Should not get here");
+        return null;
     }
     
     /**

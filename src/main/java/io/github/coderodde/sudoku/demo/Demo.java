@@ -17,8 +17,9 @@ import java.util.Random;
  */
 public class Demo {
 
-    private static final int WIDTH_HEIGHT = 16;
-    private static final int NUMBER_OF_CELLS_TO_PRUNE = 150;
+    private static final int WIDTH_HEIGHT = 9;
+    private static final int NUMBER_OF_SEEDS = 20;
+    private static final int NUMBER_OF_CELLS_TO_PRUNE = 10;
     
     public static void main(String[] args) {
         final Random random = new Random();

@@ -5,6 +5,7 @@ import io.github.coderodde.sudoku.misc.RandomSudokuBoardSeedProvider;
 import io.github.coderodde.sudoku.misc.SudokuBoardVerifier;
 import io.github.coderodde.sudoku.misc.Utils;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicReference;
@@ -16,6 +17,11 @@ import java.util.concurrent.atomic.AtomicReference;
  * @since 1.0.0 (Dec 4, 2024)
  */
 public final class ParallelSudokuSolver {
+    
+    /**
+     * The random number generator.
+     */
+    private final Random random = new Random();
     
     /**
      * The width/height of the minisquare.
@@ -40,26 +46,31 @@ public final class ParallelSudokuSolver {
     /**
      * Solves the input sudoku, which becomes modified. 
      * 
-     * @param sudokuBoard the sudoku board to solve.
+     * @param sudokuBoard   the sudoku board to solve.
+     * @param numberOfSeeds the number of seeds.
      * @return a solved board.
      */
-    public SudokuBoard solve(final SudokuBoard sudokuBoard) {
+    public SudokuBoard solve(final SudokuBoard sudokuBoard,
+                             final int numberOfSeeds) {
         return solve(sudokuBoard, 
+                     numberOfSeeds,
                      Runtime.getRuntime().availableProcessors());
     }
     /**
      * Solves the input sudoku, 
      * 
-     * @param sudokuBoard the sudoku board to solve.
+     * @param sudokuBoard        the sudoku board to solve.
+     * @param numberOfSeeds      the number of seeds.
      * @param numberOfProcessors the number of processors to use.
      * @return a solved board.
      */
     public SudokuBoard solve(final SudokuBoard sudokuBoard,
-                             int numberOfProcessors) {
+                             final int numberOfSeeds,
+                             final int numberOfProcessors) {
         
         if (!SudokuBoardVerifier.isValid(sudokuBoard)) {
             // Don't process invalid sudoku boards:
-            return null;
+            throw new IllegalArgumentException("Input sudoku board is invalid");
         }
         
         // Once here, sudokuBoard is valid.
@@ -76,12 +87,19 @@ public final class ParallelSudokuSolver {
         final List<SudokuSolverThread> threads =
                 new ArrayList<>(numberOfProcessors);
         
+        final List<List<SudokuBoard>> listOfSeedLists = new ArrayList<>();
+        
         // The seeds of the search. Each seed will be passes as initial board to
         // each solver thread:
         final List<SudokuBoard> seeds = 
                 RandomSudokuBoardSeedProvider
                         .computeSeeds(sudokuBoard,
-                                      numberOfProcessors);
+                                      numberOfSeeds);
+        
+        // Splits randomly the input seeds to several seed buckets:
+        splitSeeds(numberOfProcessors,
+                   listOfSeedLists,
+                   seeds);
         
         // Used for halting all the threads when a solution is found:
         final SharedThreadState sharedThreadState = 
@@ -90,7 +108,7 @@ public final class ParallelSudokuSolver {
         // Spawn the threads:
         for (int i = 0; i < Math.min(numberOfProcessors, seeds.size()); ++i) {
             threads.add(
-                    new SudokuSolverThread(new SudokuBoard(seeds.get(i)),
+                    new SudokuSolverThread(listOfSeedLists.get(i),
                                            sudokuBoard, 
                                            sharedThreadState));
             threads.get(i).start();
@@ -108,6 +126,23 @@ public final class ParallelSudokuSolver {
         
         // Fetch and return the solution:
         return sharedThreadState.getSolution(); 
+    }
+    
+    private void splitSeeds(final int threadCount,
+                            final List<List<SudokuBoard>>listOfSeedLists, 
+                            final List<SudokuBoard> seeds) {
+        
+        for (int i = 0; i < threadCount; ++i) {
+            listOfSeedLists.add(new ArrayList<>());
+        }
+        
+        Collections.shuffle(seeds, random);
+        int counter = 0;
+        
+        for (final SudokuBoard sudokuBoard : seeds) {
+            listOfSeedLists.get(counter).add(sudokuBoard);
+            counter = (counter + 1) % threadCount;
+        }
     }
     
     /**
@@ -166,12 +201,17 @@ public final class ParallelSudokuSolver {
         /**
          * The seeding sudoku board.
          */
-        private final SudokuBoard seed;
+        private final List<SudokuBoard> seeds;
         
         /**
          * The original task sudoku board.
          */
         private final SudokuBoard original;
+        
+        /**
+         * The current board under investigation.
+         */
+        private SudokuBoard board;
         
         /**
          * The shared thread state. Used for communicating that a solution is 
@@ -191,17 +231,21 @@ public final class ParallelSudokuSolver {
          * @param original          the original sudoku board.
          * @param sharedThreadState the shared thread state.
          */
-        SudokuSolverThread(final SudokuBoard seed,
+        SudokuSolverThread(final List<SudokuBoard> seeds,
                            final SudokuBoard original,
                            final SharedThreadState sharedThreadState) {
-            this.seed = seed;
+            this.seeds = seeds;
+            this.board = null;
             this.original = original;
             this.sharedThreadState = sharedThreadState;
         }
         
         @Override
         public void run() {
-            solveImpl(0, 0);
+            for (final SudokuBoard seed : seeds) {
+                this.board = seed;
+                solveImpl(0, 0);
+            }
         }
         
         /**
@@ -210,9 +254,9 @@ public final class ParallelSudokuSolver {
          * @return cell values.
          */
         private int[] getCellValues() {
-            final int[] cellValues = new int[seed.getWidthHeight()];
+            final int[] cellValues = new int[board.getWidthHeight()];
             
-            for (int i = 0; i < seed.getWidthHeight(); ++i) {
+            for (int i = 0; i < board.getWidthHeight(); ++i) {
                 cellValues[i] = i + 1;
             }
             
@@ -236,25 +280,25 @@ public final class ParallelSudokuSolver {
                 return true;
             }
             
-            if (x == seed.getWidthHeight()) {
+            if (x == board.getWidthHeight()) {
                 // Once here, we have reached the right border. Go to the
                 // beginning of the next row:
                 x = 0;
                 ++y;
             }
             
-            if (y == seed.getWidthHeight()) {
+            if (y == board.getWidthHeight()) {
                 // Once here, we have a solution. Record it and exit with true:
-                sharedThreadState.setSolution(seed);
+                sharedThreadState.setSolution(board);
                 return true;
             }
             
             if (original.get(x, y) != Utils.UNUSED_CELL) {
                 // Once here, we need just to copy a cell value from the 
                 // original sudoku board to the seed:
-                seed.set(x,
-                         y,
-                         original.get(x, y));
+                board.set(x,
+                          y,
+                          original.get(x, y));
                 
                 // Process further:
                 return solveImpl(x + 1, y);
@@ -282,7 +326,7 @@ public final class ParallelSudokuSolver {
                 }
                 
                 // Write the cell value to seed:
-                seed.set(x, y, cellValue);
+                board.set(x, y, cellValue);
                 
                 // BEGIN: Mark in filters.
                 rowIntSets[y].add(cellValue);

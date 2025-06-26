@@ -17,9 +17,9 @@ import java.util.Random;
  */
 public class Demo {
 
-    private static final int WIDTH_HEIGHT = 9;
-    private static final int NUMBER_OF_SEEDS = 20;
-    private static final int NUMBER_OF_CELLS_TO_PRUNE = 10;
+    private static final int WIDTH_HEIGHT = 16;
+    private static final int NUMBER_OF_SEEDS = 512;
+    private static final int NUMBER_OF_CELLS_TO_PRUNE = 150;
     
     public static void main(String[] args) {
         final Random random = new Random();
@@ -37,6 +37,8 @@ public class Demo {
                                       NUMBER_OF_CELLS_TO_PRUNE,
                                       random);
         
+        System.out.println("Board pruned!");
+        
         while (threads > 0) {
             benchmark(threads, new SudokuBoard(sourceSudokuBoard));
             threads /= 2;
@@ -50,7 +52,8 @@ public class Demo {
         
         final SudokuBoard solution = 
                 new ParallelSudokuSolver()
-                        .solve(sourceSudokuBoard,
+                        .solve(sourceSudokuBoard, 
+                               NUMBER_OF_SEEDS,
                                threads);
         
         final long tb = System.currentTimeMillis();

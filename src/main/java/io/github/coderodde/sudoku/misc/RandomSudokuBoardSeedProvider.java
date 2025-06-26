@@ -83,11 +83,20 @@ public final class RandomSudokuBoardSeedProvider {
                      cellValue);
             
             // Check that after new cell value the seed remains valid:
-            if (SudokuBoardVerifier.isValid(seed)) {
-                if (!currentSeeds.contains(seed)) {
-                    currentSeeds.add(seed);
-                    return seed;
-                }
+            if (SudokuBoardVerifier.isValid(seed) 
+                  && !currentSeeds.contains(seed)) {
+                
+                seed.set(targetPoint.x, 
+                         targetPoint.y, 
+                         Utils.UNUSED_CELL);
+                
+                currentSeeds.add(seed);
+                return seed;
+            } else {
+                // Unset the cell value:
+                seed.set(targetPoint.x, 
+                         targetPoint.y, 
+                         Utils.UNUSED_CELL);
             }
         }
         
